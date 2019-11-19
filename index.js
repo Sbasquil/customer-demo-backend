@@ -23,12 +23,12 @@ app.get('/searchProducts/:postcode/:category/:query', (req,res) => {
     axios.get(`https://www.foodbomb.com.au/supplier-service/postcode/${postcode}/suppliers`)
         .then(response => {
             console.log(`its getting into the axios request and succeeding`)
-            res.json(response)
-            console.log(JSON.stringify(response))
+            res.json(response.data)
+            console.log(response)
         })
         .catch(response => {
             console.log(`getting into the request and failing`)
-            res.send(response)
+            res.json(response.data)
             console.error(response)
         })
     })
