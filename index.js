@@ -28,7 +28,8 @@ app.get('/searchProducts/:postcode/:category/:query', (req,res) => {
          
             axios.post(`${FB_HOST_URL}/shop/findProductsBySupplierIds.php`, payload)
                 .then(response => {
-                    res.json({shortlist: response.data, supplierIds: payload.supplierIds});
+                    const searchResults = response.data.result.map(product => ({ name: product.pname, portion: `${product.size}${product.sizeUnit}`, productId: product.product_id, price: `$${product.price}`}))
+                    res.json({shortlist: searchResults, count: response.data.count, numOfSuppliers: payload.supplierIds.length});
                 })
                 .catch( error => { 
                     res.status(error.status)
