@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const { FB_HOST_URL } = require('./config')
 
 const app = express();
 const PORT = 3001;
@@ -16,7 +17,7 @@ app.get('/searchProducts/:postcode/:category/:query', (req,res) => {
     const category = req.params.category
     const query = req.params.query 
 
-    axios.get(`https://www.foodbomb.com.au/supplier-service/postcode/${postcode}/suppliers`)
+    axios.get(`${FB_HOST_URL}/supplier-service/postcode/${postcode}/suppliers`)
         .then(response => {
             const payload = {
                 category,
@@ -25,7 +26,7 @@ app.get('/searchProducts/:postcode/:category/:query', (req,res) => {
                 supplierIds: response.data
             }   
          
-            axios.post(`https://www.foodbomb.com.au/shop/findProductsBySupplierIds.php`, payload)
+            axios.post(`${FB_HOST_URL}/shop/findProductsBySupplierIds.php`, payload)
                 .then(response => {
                     res.json({shortlist: response.data, supplierIds: payload.supplierIds});
                 })
@@ -42,4 +43,4 @@ app.get('/searchProducts/:postcode/:category/:query', (req,res) => {
         })
     })
 
-app.listen(PORT, () => console.log(`listening on ${PORT}`));
+app.listen(PORT, () => console.log(`listening on ${PORT} and making requests to ${FB_HOST_URL}`));
