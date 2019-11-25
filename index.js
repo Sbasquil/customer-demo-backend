@@ -1,13 +1,12 @@
 const express = require('express');
 const axios = require('axios');
-const { FB_HOST_URL } = require('./config')
-const { searchShortlistOfProductsService,  
+const { FB_HOST_URL } = require('./config');
+const { postcodeValidator,
+    categoryValidator,
+    searchShortlistOfProductsService,  
     searchSupplierCodesService,
-    processSearchResultsForUi
-} = require('./services/searchServices')
-const { errorHandler } = require('./middleware/errorHandler')
-const supertest = require('supertest')
-const request = supertest(app)
+    processSearchResultsForUi } = require('./services/searchServices');
+const { errorHandler } = require('./middleware/errorHandler');
 
 
 const app = express();
@@ -19,9 +18,6 @@ app.use((req, res, next) => {
     next();
   });
 
-
-
-// todo: add regex for field validation. 
 app.get('/searchProducts/:postcode/:category/:query', async (req,res) => {
     const params = {
         postcode: req.params.postcode,
@@ -29,13 +25,19 @@ app.get('/searchProducts/:postcode/:category/:query', async (req,res) => {
         query: req.params.query 
     }
 
-    const supplierIds = await searchSupplierCodesService(axios, FB_HOST_URL, params.postcode)
-    const productResults = await searchShortlistOfProductsService(supplierIds, params.category, params.query, axios, FB_HOST_URL)
-    const processedResults = processSearchResultsForUi(productResults.result)
-    
-    res.json({ numOfSuppliers: supplierIds.length, shortlist: processedResults, count: productResults.count })
+    if (postcodeValidator(params.postcode) && categoryValidator(params.category)) {
+        const supplierIds = await searchSupplierCodesService(axios, FB_HOST_URL, params.postcode)
+        const productResults = await searchShortlistOfProductsService(supplierIds, params.category, params.query, axios, FB_HOST_URL)
+        const processedResults = processSearchResultsForUi(productResults.result)
+        
+        res.json({ numOfSuppliers: supplierIds.length, shortlist: processedResults, count: productResults.count })
+    } else {
+        res.status(400).json({detail: "Invalid category or Postcode"})
+    }
 
 })
 app.use(errorHandler)
 
 app.listen(PORT, () => console.log(`listening on ${PORT} and making requests to ${FB_HOST_URL}`));
+
+module.exports = app;
